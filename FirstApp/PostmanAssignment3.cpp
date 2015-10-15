@@ -70,6 +70,35 @@ enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
 enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE};
 
 /*---------------------------------------------------------------*/
+vec2 getPosition(int x1, int y1) {
+	float xf = (float)x1;
+	float yf = (float)y1;
+	float x, y;
+	int width = glutGet(GLUT_WINDOW_WIDTH);
+	int height = glutGet(GLUT_WINDOW_HEIGHT);
+	float halfWidth = (float)width / 2;
+	float halfHeight = (float)height / 2;
+
+	if (x1 < halfWidth)
+		x = xf / halfWidth - 1;
+	else if (x1 > halfWidth)
+		x = (xf - halfWidth) / halfWidth;
+	else
+		x = 0;
+
+
+	if (y1 < halfHeight)
+		y = -(yf - halfHeight) / halfHeight;
+	else if (y1 > halfHeight)
+		y = yf / -halfHeight + 1;
+	else
+		y = 0;
+
+	return vec2(x, y);
+
+}
+
+/*------------------------------------------------------------------*/
 
 
 //Initialize necessary componenets and send data to the GPU
@@ -150,9 +179,15 @@ void keyboard( unsigned char key, int x, int y )
 
 /*---------------------------------------------------------------*/
 
-void mouse(int button, int state, int x, int y) {
+void mouse(int button, int state, int x1, int y1) {
+	
+	//Calculate and store world-view coordinates
+	vec2 temp = getPosition(x1, y1);
+	float x = temp.x;
+	float y = temp.y;
+
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		printf("(%d, %d)", x, y);
+		printf("(%f, %f)\n", x, y);
 		//Check if click was on the shapes menu
 		if (x < -0.6) {
 			if (y > 0.5) {
@@ -160,7 +195,6 @@ void mouse(int button, int state, int x, int y) {
 			}
 		}
 	}
-
 }
 
 /*---------------------------------------------------------------*/
@@ -201,6 +235,8 @@ void menu(int choice) {
 
 }
 
+
+/*---------------------------------------------------------------*/
 
 /*---------------------------------------------------------------*/
 
