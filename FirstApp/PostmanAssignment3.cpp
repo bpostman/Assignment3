@@ -149,6 +149,21 @@ void keyboard( unsigned char key, int x, int y )
 }
 
 /*---------------------------------------------------------------*/
+
+void mouse(int button, int state, int x, int y) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		printf("(%d, %d)", x, y);
+		//Check if click was on the shapes menu
+		if (x < -0.6) {
+			if (y > 0.5) {
+				int z = 0;
+			}
+		}
+	}
+
+}
+
+/*---------------------------------------------------------------*/
 void menu(int choice) {
 
 	switch (choice) {
@@ -213,23 +228,24 @@ void initMenu() {
 /*---------------------------------------------------------------*/
 
 
-int main( int argc, char **argv )
-{
-
-    glutInit( &argc, argv );
-    glutInitDisplayMode( GLUT_RGBA );
-    glutInitWindowSize( 512, 512 );
+int main( int argc, char **argv ) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_RGBA);
+    glutInitWindowSize(512, 512);
     
-	glutInitContextVersion( 3, 2 );
-    glutInitContextProfile( GLUT_CORE_PROFILE );
-    glutCreateWindow( "Ben Postman - Assignment 3" );
+	glutInitContextVersion(3, 2);
+    glutInitContextProfile(GLUT_CORE_PROFILE);
+    glutCreateWindow("Ben Postman - Assignment 3");
 	glewInit(); 
 
     init();
 	initMenu();
 
-	glutDisplayFunc( display );
-    glutKeyboardFunc( keyboard );
+	//Handler functions
+	glutMouseFunc(mouse);
+	glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+
 	glutMainLoop();
     
 	return 0;
