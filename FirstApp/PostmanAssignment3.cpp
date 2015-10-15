@@ -33,7 +33,7 @@ vec4 staticVertices[] = {
 	//Circle and free draw created in init function
 };
 
-//Order of vertices
+//Order of vertices, used for statically created objects
 GLuint elements[] = {
 	
 	//Sidebar frame
@@ -49,16 +49,18 @@ GLuint elements[] = {
 	13, 14, 15, 16, 13
 };
 
-//Counts of vertices for both names, used throughout program
-static int elementsCount = sizeof(elements) / sizeof(GLuint);
-static int operationMenu = 0;
-static int colorMenu = 0;
-static int menuID = 0;
-static int operation = 0;
-static int shape = 0;
+//IDs for menus and seections
+static int operationMenu;
+static int colorMenu;
+static int menuID;
+static int operation;
+static int shape;
 static float inputColor[4];
-static GLuint shaders = 0;
-static GLuint color = 0;
+
+static GLuint shaders;
+static GLuint color;
+
+//Vertex counts and arrays for dynamically created objects
 static const int circlePoints = 5000;
 vec4 circleVertices[circlePoints];
 static const int freePoints = 1000;
@@ -72,15 +74,6 @@ enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, 
 
 //Initialize necessary componenets and send data to the GPU
 void init() {
-	for (int i = 0; i < circlePoints; i++) {
-		float theta = 6.18 * i / circlePoints;
-		float x = -0.8+0.15*cosf(theta);
-		float y = -0.25+0.15*sinf(theta);
-		circleVertices[i] = vec4(x, y, 0, 1);
-		//printf("%d: (%f, %f)", i, x, y);
-		//glVertex2f(x + cx, y + cy);//output vertex
-	}
-	printf("%f,%f", circleVertices[1000].x, circleVertices[1000].y);
 
 	//Set background color to grey
 	glClearColor(0.5, 0.5, 0.5, 1.0);
@@ -93,7 +86,14 @@ void init() {
 	//Generate vertex buffer object and element buffer object
 	GLuint buffers[2];
 	glGenBuffers(2, buffers);
-	//glGenBuffers(1, &ebo);
+
+	//Create and store points for the circle on the sidebar
+	float theta = 6.18 / circlePoints;
+	for (int i = 0; i < circlePoints; i++) {
+		float x = -0.8+0.15*cosf(theta*i);
+		float y = -0.25+0.15*sinf(theta*i);
+		circleVertices[i] = vec4(x, y, 0, 1);
+	}
 	
 	//Store the vertex data in the vbo
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
@@ -109,7 +109,6 @@ void init() {
 	// Load shaders
 	shaders = InitShader("vShader.glsl", "fShader.glsl");
 	color = glGetUniformLocation(shaders, "vColor");
-
 
 	//Create location for first name position
 	GLuint position = glGetAttribLocation(shaders, "vPosition");
