@@ -49,33 +49,31 @@ GLuint elements[] = {
 	13, 14, 15, 16, 13
 };
 
-//IDs for menus and seections
+//IDs for menus and selections
 static int operationMenu;
 static int colorMenu;
 static int menuID;
 static int operation;
-static int shape;
+static int shape = -1;
 static float inputColor[4];
-static const int numPoints = 5000;
 
+//Stores and tracks user input
+static int clickCount = 0;
 vec4 tVertices[3];
 vec4 rVertices[5];	//5 to make the loop
-vec4 cVertices[2];	//Tracks the clicks
-vec4 cPoints[numPoints];	//Holds actual points for the circle
+vec4 cVertices[2];	//Holds the center and point on circumference
 vec4 fVertices[5];
 
-static int clickCount = 0;
-
-
+//Some global variabls
 static GLuint shaders;
 static GLuint color;
+enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
+enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE };
 
 //Vertex counts and arrays for dynamically created objects
+static const int numPoints = 5000;
 vec4 circleVertices[numPoints];
 vec4 freeVertices[numPoints];
-
-enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
-enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE};
 
 /*---------------------------------------------------------------*/
 vec2 getPosition(int x1, int y1) {
@@ -156,11 +154,7 @@ void init() {
 /*---------------------------------------------------------------*/
 
 void drawTriangle(int button, int state, float x, float y) {
-	//printf("Click Count: %d, tVertices[0]: %f, %f, tVertices[1]: %f, %f, tVertices[2]: %f, %f \n", clickCount, tVertices[0].x, tVertices[0].y, tVertices[1].x, tVertices[1].y, tVertices[2].x, tVertices[2].y);
 	if (clickCount == 1) {
-		//Clear out data from old shape
-		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
-		//glutPostRedisplay();
 		tVertices[0] = vec4(x, y, 0, 1);
 	}
 	else if (clickCount == 2) {
@@ -169,17 +163,22 @@ void drawTriangle(int button, int state, float x, float y) {
 	
 	else if (clickCount == 3) {
 		tVertices[2] = vec4(x, y, 0, 1);
+		
+		//Store data in VBO and post a redisplay
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
 		glutPostRedisplay();
+		
+		//Reset data
 		clickCount = 0;
+		tVertices[0] = NULL;
+		tVertices[1] = NULL;
+		tVertices[2] = NULL;
 	}
-	
 }
 
 /*---------------------------------------------------------------*/
 
 void drawRectangle(int button, int state, float x, float y) {
-	
 	if (clickCount == 1) {
 		//Clear out data from old shape
 		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
@@ -192,9 +191,18 @@ void drawRectangle(int button, int state, float x, float y) {
 		rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
 		rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
 		rVertices[4] = vec4(rVertices[0]);
+		
+		//Store data in VBO and post a redisplay
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
 		glutPostRedisplay();
+		
+		//Reset data
 		clickCount = 0;
+		rVertices[0] = NULL;
+		rVertices[1] = NULL;
+		rVertices[2] = NULL;
+		rVertices[3] = NULL;
+		rVertices[5] = NULL;
 	}
 }
 
@@ -207,25 +215,38 @@ void drawCircle(int button, int state, float x, float y) {
 	}
 	else if (clickCount ==2) {
 		cVertices[1] = vec4(x, y, 0, 1);
-		float radius = sqrt(pow(cVertices[1].x - cVertices[0].x, 2) + pow(cVertices[1].y - cVertices[0].y, 2));
+		vec4 points[numPoints];
 		
+		//Inputs used to draw circle
+		float radius = sqrt(pow(cVertices[1].x - cVertices[0].x, 2) + pow(cVertices[1].y - cVertices[0].y, 2));
 		float theta = 6.18 / numPoints;
+
+		//Calculate points for circle
 		for (int i = 0; i < numPoints; i++) {
 			float x = cVertices[0].x + radius*cosf(theta*i);
 			float y = cVertices[0].y + radius*sinf(theta*i);
-			cPoints[i] = vec4(x, y, 0, 1);
-		}
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(cPoints), cPoints);
-		glutPostRedisplay();
-		clickCount = 0;
-	}
 
+			//Don't draw point if it goes into sidebar
+			if (x > -0.6) {
+				points[i] = vec4(x, y, 0, 1);
+			}
+		}
+		
+		//Store data in VBO and post a redisplay
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(points), points);
+		glutPostRedisplay();
+
+		//Reset data
+		clickCount = 0;
+		cVertices[0] = NULL;
+		cVertices[1] = NULL;
+	}
 }
 
 /*---------------------------------------------------------------*/
 
 void drawFree(int button, int state, float x, float y) {
-
+	//FUCK FUCK FUCK SHIT SHIT
 }
 
 /*---------------------------------------------------------------*/
@@ -249,7 +270,7 @@ void display( void )
 		glDrawArrays(GL_TRIANGLES, first, 3);
 	else if (shape == RECTANGLE && clickCount != 1)
 		glDrawArrays(GL_LINE_STRIP, first, 5);
-	else if (shape == CIRCLE)
+	else if (shape == CIRCLE && clickCount != 1)
 		glDrawArrays(GL_POINTS, first, numPoints);
 	glFlush();
 }
