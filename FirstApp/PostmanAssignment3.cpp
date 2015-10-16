@@ -56,9 +56,12 @@ static int menuID;
 static int operation;
 static int shape;
 static float inputColor[4];
+static const int numPoints = 5000;
+
 vec4 tVertices[3];
 vec4 rVertices[5];	//5 to make the loop
-vec4 sVertices[2];
+vec4 cVertices[2];	//Tracks the clicks
+vec4 cPoints[numPoints];	//Holds actual points for the circle
 vec4 fVertices[5];
 
 static int clickCount = 0;
@@ -68,10 +71,8 @@ static GLuint shaders;
 static GLuint color;
 
 //Vertex counts and arrays for dynamically created objects
-static const int circlePoints = 5000;
-vec4 circleVertices[circlePoints];
-static const int freePoints = 1000;
-vec4 freeVertices[freePoints];
+vec4 circleVertices[numPoints];
+vec4 freeVertices[numPoints];
 
 enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
 enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE};
@@ -124,8 +125,8 @@ void init() {
 	glGenBuffers(2, buffers);
 
 	//Create and store points for the circle on the sidebar
-	float theta = 6.18 / circlePoints;
-	for (int i = 0; i < circlePoints; i++) {
+	float theta = 6.18 / numPoints;
+	for (int i = 0; i < numPoints; i++) {
 		float x = -0.8+0.15*cosf(theta*i);
 		float y = -0.25+0.15*sinf(theta*i);
 		circleVertices[i] = vec4(x, y, 0, 1);
@@ -201,6 +202,24 @@ void drawRectangle(int button, int state, float x, float y) {
 
 void drawCircle(int button, int state, float x, float y) {
 
+	if (clickCount == 1) {
+		cVertices[0] = vec4(x, y, 0, 1);
+	}
+	else if (clickCount ==2) {
+		cVertices[1] = vec4(x, y, 0, 1);
+		float radius = sqrt(pow(cVertices[1].x - cVertices[0].x, 2) + pow(cVertices[1].y - cVertices[0].y, 2));
+		
+		float theta = 6.18 / numPoints;
+		for (int i = 0; i < numPoints; i++) {
+			float x = cVertices[0].x + radius*cosf(theta*i);
+			float y = cVertices[0].y + radius*sinf(theta*i);
+			cPoints[i] = vec4(x, y, 0, 1);
+		}
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(cPoints), cPoints);
+		glutPostRedisplay();
+		clickCount = 0;
+	}
+
 }
 
 /*---------------------------------------------------------------*/
@@ -222,7 +241,7 @@ void display( void )
 	glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_INT, 0);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indexOffset(20));
 	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(23));
-	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), circlePoints);
+	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), numPoints);
 
 	//Draw user-defined objects
 	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
@@ -231,7 +250,7 @@ void display( void )
 	else if (shape == RECTANGLE && clickCount != 1)
 		glDrawArrays(GL_LINE_STRIP, first, 5);
 	else if (shape == CIRCLE)
-		glDrawArrays(GL_POINTS, first, circlePoints);
+		glDrawArrays(GL_POINTS, first, numPoints);
 	glFlush();
 }
 
