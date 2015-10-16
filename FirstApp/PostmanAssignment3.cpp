@@ -157,6 +157,9 @@ void init() {
 void drawTriangle(int button, int state, float x, float y) {
 	//printf("Click Count: %d, tVertices[0]: %f, %f, tVertices[1]: %f, %f, tVertices[2]: %f, %f \n", clickCount, tVertices[0].x, tVertices[0].y, tVertices[1].x, tVertices[1].y, tVertices[2].x, tVertices[2].y);
 	if (clickCount == 1) {
+		//Clear out data from old shape
+		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
+		//glutPostRedisplay();
 		tVertices[0] = vec4(x, y, 0, 1);
 	}
 	else if (clickCount == 2) {
@@ -165,9 +168,9 @@ void drawTriangle(int button, int state, float x, float y) {
 	
 	else if (clickCount == 3) {
 		tVertices[2] = vec4(x, y, 0, 1);
-		clickCount = 0;
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
 		glutPostRedisplay();
+		clickCount = 0;
 	}
 	
 }
@@ -177,6 +180,9 @@ void drawTriangle(int button, int state, float x, float y) {
 void drawRectangle(int button, int state, float x, float y) {
 	
 	if (clickCount == 1) {
+		//Clear out data from old shape
+		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
+		//glutPostRedisplay();
 		rVertices[0] = vec4(x, y, 0, 1);
 	}
 	
@@ -185,12 +191,10 @@ void drawRectangle(int button, int state, float x, float y) {
 		rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
 		rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
 		rVertices[4] = vec4(rVertices[0]);
-		clickCount = 0;
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
 		glutPostRedisplay();
+		clickCount = 0;
 	}
-
-
 }
 
 /*---------------------------------------------------------------*/
@@ -222,9 +226,9 @@ void display( void )
 
 	//Draw user-defined objects
 	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
-	if (shape == TRIANGLE)
+	if (shape == TRIANGLE && clickCount != 1 && clickCount != 2)
 		glDrawArrays(GL_TRIANGLES, first, 3);
-	else if (shape == RECTANGLE)
+	else if (shape == RECTANGLE && clickCount != 1)
 		glDrawArrays(GL_LINE_STRIP, first, 5);
 	else if (shape == CIRCLE)
 		glDrawArrays(GL_POINTS, first, circlePoints);
@@ -254,18 +258,31 @@ void mouse(int button, int state, int x1, int y1) {
 	vec2 temp = getPosition(x1, y1);
 	float x = temp.x;
 	float y = temp.y;
+	if (clickCount == 0) {
+		//Clear out data from old shape
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), 5 * sizeof(vec4), '\0' );
+		glutPostRedisplay();
+	}
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		//Check if click was on the shapes menu, then select correct shape
 		if (x < -0.6) {
-			if (y > 0.5)
+			if (y > 0.5) {
+				clickCount = 0;
 				shape = TRIANGLE;
-			else if (y > 0.0)
+			}
+			else if (y > 0.0) {
+				clickCount = 0;
 				shape = RECTANGLE;
-			else if (y > -0.5)
+			}
+			else if (y > -0.5) {
+				clickCount = 0;
 				shape = CIRCLE;
-			else if (y > -1.0)
+			}
+			else if (y > -1.0) {
+				clickCount = 0;
 				shape = FREE;
+			}
 		}
 
 		//If click was outside of shapes menu, incremenet clickCount and go to appropriate drawing function for currently selected shape
