@@ -148,6 +148,30 @@ void init() {
 
 /*---------------------------------------------------------------*/
 
+void drawRectangle() {
+
+}
+
+/*---------------------------------------------------------------*/
+
+void drawTriangle() {
+
+}
+
+/*---------------------------------------------------------------*/
+
+void drawCircle() {
+
+}
+
+/*---------------------------------------------------------------*/
+
+void drawFree() {
+
+}
+
+/*---------------------------------------------------------------*/
+
 //Callback function used by glut to display objects to the user
 void display( void )
 {
@@ -180,18 +204,44 @@ void keyboard( unsigned char key, int x, int y )
 /*---------------------------------------------------------------*/
 
 void mouse(int button, int state, int x1, int y1) {
-	
+
 	//Calculate and store world-view coordinates
 	vec2 temp = getPosition(x1, y1);
 	float x = temp.x;
 	float y = temp.y;
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		printf("(%f, %f)\n", x, y);
-		//Check if click was on the shapes menu
+		//Check if click was on the shapes menu, then select correct shape
 		if (x < -0.6) {
-			if (y > 0.5) {
-				int z = 0;
+			if (y > 0.5)
+				shape = RECTANGLE;
+			else if (y > 0.0)
+				shape = TRIANGLE;
+			else if (y > -0.5)
+				shape = CIRCLE;
+			else if (y > -1.0)
+				shape = FREE;
+			else
+				shape = -1;
+		}
+
+		//If click was outside of shapes menu, go to appropriate drawing function for currently selected shape
+		else {
+			switch (shape) {
+			case RECTANGLE:
+				drawRectangle();
+				break;
+			case TRIANGLE:
+				drawTriangle();
+				break;
+			case CIRCLE:
+				drawCircle();
+				break;
+			case FREE:
+				drawFree();
+				break;
+			default:
+				break;
 			}
 		}
 	}
