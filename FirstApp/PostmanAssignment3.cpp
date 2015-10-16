@@ -57,7 +57,7 @@ static int operation;
 static int shape;
 static float inputColor[4];
 vec4 tVertices[3];
-vec4 rVertices[4];
+vec4 rVertices[5];	//5 to make the loop
 vec4 sVertices[2];
 vec4 fVertices[5];
 
@@ -133,8 +133,7 @@ void init() {
 	
 	//Store the vertex data in the vbo
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices), staticVertices, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(freeVertices), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(freeVertices)+sizeof(rVertices), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(staticVertices), staticVertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices), sizeof(circleVertices), circleVertices);
 
@@ -156,14 +155,14 @@ void init() {
 /*---------------------------------------------------------------*/
 
 void drawTriangle(int button, int state, float x, float y) {
-	printf("%f, %f", x, y);
-	printf("Click Count: %d, tVertices[0]: %f, %f, tVertices[1]: %f, %f, tVertices[2]: %f, %f \n", clickCount, tVertices[0].x, tVertices[0].y, tVertices[1].x, tVertices[1].y, tVertices[2].x, tVertices[2].y);
+	//printf("Click Count: %d, tVertices[0]: %f, %f, tVertices[1]: %f, %f, tVertices[2]: %f, %f \n", clickCount, tVertices[0].x, tVertices[0].y, tVertices[1].x, tVertices[1].y, tVertices[2].x, tVertices[2].y);
 	if (clickCount == 1) {
 		tVertices[0] = vec4(x, y, 0, 1);
 	}
 	else if (clickCount == 2) {
 		tVertices[1] = vec4(x, y, 0, 1);
 	}
+	
 	else if (clickCount == 3) {
 		tVertices[2] = vec4(x, y, 0, 1);
 		clickCount = 0;
@@ -177,6 +176,20 @@ void drawTriangle(int button, int state, float x, float y) {
 
 void drawRectangle(int button, int state, float x, float y) {
 	
+	if (clickCount == 1) {
+		rVertices[0] = vec4(x, y, 0, 1);
+	}
+	
+	else if (clickCount == 2) {
+		rVertices[2] = vec4(x, y, 0, 1);
+		rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
+		rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
+		rVertices[4] = vec4(rVertices[0]);
+		clickCount = 0;
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
+		glutPostRedisplay();
+	}
+
 
 }
 
