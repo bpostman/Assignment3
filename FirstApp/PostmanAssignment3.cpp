@@ -56,6 +56,13 @@ static int menuID;
 static int operation;
 static int shape;
 static float inputColor[4];
+vec4 tVertices[3];
+vec4 rVertices[4];
+vec4 sVertices[2];
+vec4 fVertices[5];
+
+static int clickCount = 0;
+
 
 static GLuint shaders;
 static GLuint color;
@@ -148,25 +155,40 @@ void init() {
 
 /*---------------------------------------------------------------*/
 
-void drawRectangle() {
+void drawTriangle(int button, int state, float x, float y) {
+	printf("%f, %f", x, y);
+	printf("Click Count: %d, tVertices[0]: %f, %f, tVertices[1]: %f, %f, tVertices[2]: %f, %f \n", clickCount, tVertices[0].x, tVertices[0].y, tVertices[1].x, tVertices[1].y, tVertices[2].x, tVertices[2].y);
+	if (clickCount == 1) {
+		tVertices[0] = vec4(x, y, 0, 1);
+	}
+	else if (clickCount == 2) {
+		tVertices[1] = vec4(x, y, 0, 1);
+	}
+	else if (clickCount == 3) {
+		tVertices[2] = vec4(x, y, 0, 1);
+		clickCount = 0;
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
+		glutPostRedisplay();
+	}
+	
+}
+
+/*---------------------------------------------------------------*/
+
+void drawRectangle(int button, int state, float x, float y) {
+	
 
 }
 
 /*---------------------------------------------------------------*/
 
-void drawTriangle() {
+void drawCircle(int button, int state, float x, float y) {
 
 }
 
 /*---------------------------------------------------------------*/
 
-void drawCircle() {
-
-}
-
-/*---------------------------------------------------------------*/
-
-void drawFree() {
+void drawFree(int button, int state, float x, float y) {
 
 }
 
@@ -178,11 +200,21 @@ void display( void )
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//Clear the display
 	glClear(GL_COLOR_BUFFER_BIT);
-	//Draw first name
+
+	//Draw program-defined objects
 	glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_INT, 0);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indexOffset(20));
 	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(23));
 	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), circlePoints);
+
+	//Draw user-defined objects
+	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
+	if (shape == TRIANGLE)
+		glDrawArrays(GL_TRIANGLES, first, 3);
+	else if (shape == RECTANGLE)
+		glDrawArrays(GL_LINE_STRIP, first, 5);
+	else if (shape == CIRCLE)
+		glDrawArrays(GL_POINTS, first, circlePoints);
 	glFlush();
 }
 
@@ -214,31 +246,33 @@ void mouse(int button, int state, int x1, int y1) {
 		//Check if click was on the shapes menu, then select correct shape
 		if (x < -0.6) {
 			if (y > 0.5)
-				shape = RECTANGLE;
-			else if (y > 0.0)
 				shape = TRIANGLE;
+			else if (y > 0.0)
+				shape = RECTANGLE;
 			else if (y > -0.5)
 				shape = CIRCLE;
 			else if (y > -1.0)
 				shape = FREE;
-			else
-				shape = -1;
 		}
 
-		//If click was outside of shapes menu, go to appropriate drawing function for currently selected shape
+		//If click was outside of shapes menu, incremenet clickCount and go to appropriate drawing function for currently selected shape
 		else {
 			switch (shape) {
-			case RECTANGLE:
-				drawRectangle();
-				break;
 			case TRIANGLE:
-				drawTriangle();
+				clickCount++;
+				drawTriangle(button, state, x, y);
+				break;
+			case RECTANGLE:
+				clickCount++;
+				drawRectangle(button, state, x, y);
 				break;
 			case CIRCLE:
-				drawCircle();
+				clickCount++;
+				drawCircle(button, state, x, y);
 				break;
 			case FREE:
-				drawFree();
+				clickCount++;
+				drawFree(button, state, x, y);
 				break;
 			default:
 				break;
