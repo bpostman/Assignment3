@@ -223,9 +223,15 @@ vec2 getPosition(int x1, int y1) {
 		y = yf / -halfHeight + 1;
 	else
 		y = 0;
-
 	return vec2(x, y);
 
+	/*
+	x = (float)x1 / width * 2.0f - 1.0f;
+	y = (height - (float)y1) / height * 2.0f - 1.0f;
+
+	printf("HIS: %f, %f\n\n", x, y);
+	return vec2(x, y);
+	*/
 }
 
 
@@ -333,7 +339,6 @@ void drawFree(float x, float y) {
 		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(fVertices), fVertices);
 		glutPostRedisplay();
 	}
-
 }
 
 
@@ -342,11 +347,11 @@ void drawFree(float x, float y) {
 
 void translate(float x, float y) {
 	
-	vec4 newCenter = (x, y, 0, 1);
-	mat4 modelView = Translate(newCenter);
+	printf("(%f, %f)\n", x, y);
+	mat4 modelView = Translate(vec4(x, y, 0, 1));
 	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
 	
-	//glUseProgram(dynamicShaders);
+	glUseProgram(dynamicShaders);
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
 	glutPostRedisplay();
@@ -418,10 +423,31 @@ void rotate(int y) {
 void scale(int y) {
 	float conversion = 10.0f / glutGet(GLUT_WINDOW_HEIGHT);
 	float scale = y * conversion;
-	printf("scale = %f\n", scale);
+
+	printf("Scale: %f\n", scale);
+	mat4 modelView = Scale(scale, scale, scale);
+	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
+
+	//Send matrices to the shaders and post a redisplay
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
+	glutPostRedisplay();
 }
 
 
+/*---------------------------------------------------------------*/
+void resetOperation() {
+	
+	operation = -1;
+	mat4 modelView = mat4(identity());
+	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
+
+	//Send matrices to the shaders and post a redisplay
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
+	glutPostRedisplay();
+
+}
 /*---------------------------------------------------------------*/
 
 
@@ -509,6 +535,7 @@ void mouse(int button, int state, int x1, int y1) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		//Check if click was on the shapes menu, then select correct shape
 		if (x < -0.6) {
+			resetOperation();
 			if (y > 0.5) {
 				clickCount = 0;
 				shape = TRIANGLE;
@@ -530,9 +557,11 @@ void mouse(int button, int state, int x1, int y1) {
 		else if (x > 0.8) {
 			if (operation == ROTATE) {
 				rotate(y1);
+				//operation = -1;
 			}
 			else if (operation == SCALE) {
 				scale(y1);
+				//operation = -1;
 			}
  		}
 
@@ -540,7 +569,7 @@ void mouse(int button, int state, int x1, int y1) {
 		else {
 			if (operation == TRANSLATE) {
 				translate(x, y);
-				operation = -1;
+				//operation = -1;
 			}
 
 			switch (shape) {
