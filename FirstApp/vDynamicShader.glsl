@@ -1,11 +1,12 @@
 #version 150
 
-in vec4 vFirstPosition;
-uniform vec4 vFirstColor;
-out vec4 firstColor;
+in vec4 vDynamicPosition;
+out vec4 color;
+uniform vec4 vDynamicColor;
 
 void main()
 {
-    gl_Position = vFirstPosition;
-	firstColor = vFirstColor;
+    gl_Position = vDynamicPosition;
+	color = vDynamicColor;
+
 }

@@ -78,8 +78,6 @@ static int menuID;
 static int operation;
 static int shape = -1;
 static float inputColor[4];
-static int mouseState = GLUT_UP;
-static bool dragFlag = FALSE;
 
 //Stores and tracks user input
 static int clickCount = 0;
@@ -89,8 +87,10 @@ vec4 cVertices[2];	//Holds the center and point on circumference
 vec4 fVertices[5];
 
 //Some global variabls
-static GLuint shaders;
-static GLuint color;
+static GLuint staticShaders;
+static GLuint dynamicShaders;
+static GLuint staticColor;
+static GLuint dynamicColor;
 enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
 enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE };
 
@@ -133,15 +133,19 @@ void init() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-	// Load shaders
-	shaders = InitShader("vStaticShader.glsl", "fStaticShader.glsl");
-	color = glGetUniformLocation(shaders, "vColor");
-
-	//Create location for first name position
-	GLuint position = glGetAttribLocation(shaders, "vPosition");
-	glVertexAttribPointer(position, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-	glEnableVertexAttribArray(position);
-	glUseProgram(shaders);
+	// Load shaders and store position and color for static objects
+	staticShaders = InitShader("vStaticShader.glsl", "fStaticShader.glsl");
+	staticColor = glGetUniformLocation(staticShaders, "vStaticColor");
+	GLuint staticPosition = glGetAttribLocation(staticShaders, "vStaticPosition");
+	glVertexAttribPointer(staticPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+	glEnableVertexAttribArray(staticPosition);
+	
+	// Load shaders and store position and color for dynamic objects
+	dynamicShaders = InitShader("vDynamicShader.glsl", "fDynamicShader.glsl");
+	dynamicColor = glGetUniformLocation(dynamicShaders, "vDynamicColor");
+	GLuint dynamicPosition = glGetAttribLocation(dynamicShaders, "vDynamicPosition");
+	glVertexAttribPointer(dynamicPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+	glEnableVertexAttribArray(dynamicPosition);
 }
 
 /*---------------------------------------------------------------*/
@@ -153,15 +157,18 @@ void display(void)
 	//Clear the display
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//Draw program-defined objects
+	//Draw static objects
+	glUseProgram(staticShaders);
 	glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_INT, 0);	//Sidebar frame
 	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(20));		//Selection Rectangle
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indexOffset(25));		//Triangle
 	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(28));		//Rectangle
 	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(33));		//Free Draw
 	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), numPoints);
+	glFlush();
 
-	//Draw user-defined objects
+	//Draw dynamic objects
+	glUseProgram(dynamicShaders);
 	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
 	if (shape == TRIANGLE)
 		glDrawArrays(GL_TRIANGLES, first, 3);
@@ -375,9 +382,6 @@ void mouseDrag(int x1, int y1) {
 
 
 void mouse(int button, int state, int x1, int y1) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		mouseState = GLUT_DOWN;
-	}
 	//Calculate and store world-view coordinates
 	vec2 temp = getPosition(x1, y1);
 	float x = temp.x;
@@ -467,8 +471,14 @@ void menu(int choice) {
 		break;
 	}
 
-	//Set uniform color based on menu input, send to shaders, post a redisplay
-	glUniform4f(color, inputColor[0], inputColor[1], inputColor[2], inputColor[3]);
+	//Set uniform color for static objects based on menu input, send to shaders
+	glUseProgram(staticShaders);
+	glUniform4f(staticColor, inputColor[0], inputColor[1], inputColor[2], inputColor[3]);
+	
+	//Set uniform color for dynamic objects based on menu input, send to shaders
+	glUseProgram(dynamicShaders);
+	glUniform4f(dynamicColor, inputColor[0], inputColor[1], inputColor[2], inputColor[3]);
+	
 	glutPostRedisplay();
 
 }
@@ -491,8 +501,8 @@ void initMenu() {
 	glutAddMenuEntry("Black", BLACK);
 	
 	glutCreateMenu(menu);
-	glutAddSubMenu("Shapes", operationMenu);
-	glutAddSubMenu("Colors", colorMenu);
+	glutAddSubMenu("Operation", operationMenu);
+	glutAddSubMenu("Color", colorMenu);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
