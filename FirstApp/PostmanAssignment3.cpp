@@ -29,10 +29,10 @@ vec4 staticVertices[] = {
 	vec4(-0.65, 0.35, 0.0, 1.0),	//16
 	
 	//Selection rectangle
-	vec4(0.8, 0.9, 0.0, 1.0),		//17
-	vec4(0.8, -0.9, 0.0, 1.0),		//18
-	vec4(0.9, -0.9, 0.0, 1.0),		//19
-	vec4(0.9, 0.9, 0.0, 1.0),		//20
+	vec4(0.8, 0.96, 0.0, 1.0),		//17
+	vec4(0.8, -0.99, 0.0, 1.0),		//18
+	vec4(0.9, -0.99, 0.0, 1.0),		//19
+	vec4(0.9, 0.96, 0.0, 1.0),		//20
 
 	//Free Draw
 	vec4(-0.68, -0.77, 0.0, 1.0),	//21
@@ -65,28 +65,41 @@ GLuint elements[] = {
 	21, 22, 23, 24, 25
 };
 
-//Some global variabls
-static const int numPoints = 5000;
-vec4 circleVertices[numPoints];static GLuint staticShaders;
-static GLuint dynamicShaders;
-static GLuint staticColor;
-static GLuint dynamicColor;
+//Number of points used for drawing the two circles and for free draw
+const int numPoints = 5000;
+
+//Hold the points for the circle on the sidebar
+vec4 circleVertices[numPoints];
+
+//Shortcut for the size of the statically defined objects
+int staticSize;
+
+//Indentifiers used for communicating with shaders
+GLuint staticShaders;
+GLuint dynamicShaders;
+GLuint staticColor;
+GLuint dynamicColor;
+
+//Used to index the points used in free draw
+int index = 0;
+
+//Enums for user input
 enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
 enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE };
 
 //IDs for menus and selections
-static int operationMenu;
-static int colorMenu;
-static int menuID;
-static int operation;
-static int shape = -1;
-static float inputColor[4];
+int operationMenu;
+int colorMenu;
+int menuID;
+int operation;
+int shape = -1;
+float inputColor[4];
 
 //Stores and tracks user input
-static int clickCount = 0;
+int clickCount = 0;
 vec4 tVertices[3];
 vec4 rVertices[5];	//5 to make the loop
-vec4 cVertices[2];	//Holds the center and point on circumference
+vec4 cVertices[2];	//Holds the center and point on circumference, actual points generated in function
 vec4 fVertices[numPoints];
 
 
@@ -116,9 +129,11 @@ void init() {
 		circleVertices[i] = vec4(x, y, 0, 1);
 	}
 
+	staticSize = sizeof(staticVertices) + sizeof(circleVertices);
+
 	//Store the vertex data in the vbo
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(fVertices), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, staticSize + sizeof(fVertices), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(staticVertices), staticVertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices), sizeof(circleVertices), circleVertices);
 
@@ -164,13 +179,15 @@ void display(void)
 
 	//Draw dynamic objects
 	glUseProgram(dynamicShaders);
-	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
+	int first = (staticSize / sizeof(vec4));
 	if (shape == TRIANGLE)
 		glDrawArrays(GL_TRIANGLES, first, 3);
 	else if (shape == RECTANGLE)
 		glDrawArrays(GL_LINE_STRIP, first, 5);
 	else if (shape == CIRCLE)
 		glDrawArrays(GL_POINTS, first, numPoints);
+	else if (shape == FREE)
+		glDrawArrays(GL_LINE_STRIP, first, numPoints);
 	glutSwapBuffers();
 }
 
@@ -222,7 +239,7 @@ void drawTriangle(float x, float y) {
 		tVertices[2] = vec4(x, y, 0, 1);
 		
 		//Store data in VBO and post a redisplay
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
+		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(tVertices), tVertices);
 		glutPostRedisplay();
 		
 		//Reset data
@@ -239,9 +256,6 @@ void drawTriangle(float x, float y) {
 
 void drawRectangle(float x, float y) {
 	if (clickCount == 1) {
-		//Clear out data from old shape
-		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
-		//glutPostRedisplay();
 		rVertices[0] = vec4(x, y, 0, 1);
 	}
 	
@@ -252,7 +266,7 @@ void drawRectangle(float x, float y) {
 		rVertices[4] = vec4(rVertices[0]);
 		
 		//Store data in VBO and post a redisplay
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
+		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(rVertices), rVertices);
 		glutPostRedisplay();
 		
 		//Reset data
@@ -294,7 +308,7 @@ void drawCircle(float x, float y) {
 		}
 		
 		//Store data in VBO and post a redisplay
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(points), points);
+		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(points), points);
 		glutPostRedisplay();
 
 		//Reset data
@@ -309,8 +323,46 @@ void drawCircle(float x, float y) {
 
 
 void drawFree(float x, float y) {
-	
+	if (x > -0.6 && x < 0.8) {
+		fVertices[index++] = vec4(x, y, 0, 1);
+		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(fVertices), fVertices);
+		glutPostRedisplay();
+	}
 
+}
+
+
+/*---------------------------------------------------------------*/
+
+
+void translate(float x, float y) {
+	vec4 newCenter = (x, y, 0, 1);
+	mat4 translation = Translate(newCenter);
+
+	glUseProgram(dynamicShaders);
+	GLuint projectionMatrix = glGetUniformLocation(dynamicShaders, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrix, 1, FALSE, translation);
+	glutPostRedisplay();
+}
+
+
+/*---------------------------------------------------------------*/
+
+
+void rotate(int y) {
+	float conversion = 360.0f / glutGet(GLUT_WINDOW_HEIGHT);
+	float theta = y * conversion;
+	printf("theta = %f\n", theta);
+}
+
+
+/*---------------------------------------------------------------*/
+
+
+void scale(int y) {
+	float conversion = 10.0f / glutGet(GLUT_WINDOW_HEIGHT);
+	float scale = y * conversion;
+	printf("scale = %f\n", scale);
 }
 
 
@@ -362,24 +414,28 @@ void mouseDrag(int x1, int y1) {
 
 		//If it's the second click for the rectangle, use drag functionality
 		else if (shape == RECTANGLE) {
-			rVertices[2] = vec4(x, y, 0, 1);
-			rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
-			rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
-			rVertices[4] = vec4(rVertices[0]);
-			
-			//Store data in VBO and post a redisplay
-			glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
-			glutPostRedisplay();
+			if (x > -0.6 && x < 0.8) {
+				rVertices[2] = vec4(x, y, 0, 1);
+				rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
+				rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
+				rVertices[4] = vec4(rVertices[0]);
+
+				//Store data in VBO and post a redisplay
+				glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(rVertices), rVertices);
+				glutPostRedisplay();
+			}
 		}
 	}
 
 		//If it's the third click and TRIANGLE is selected, use drag functionality
 		else if (clickCount == 2 && shape == TRIANGLE) {
-			tVertices[2] = vec4(x, y, 0, 1);
+			if (x > -0.6 && x < 0.8) {
+				tVertices[2] = vec4(x, y, 0, 1);
 
-			//Store data in VBO and post a redisplay
-			glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
-			glutPostRedisplay();
+				//Store data in VBO and post a redisplay
+				glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(tVertices), tVertices);
+				glutPostRedisplay();
+			}
 		}
 	
 }
@@ -393,11 +449,6 @@ void mouse(int button, int state, int x1, int y1) {
 	vec2 temp = getPosition(x1, y1);
 	float x = temp.x;
 	float y = temp.y;
-	if (clickCount == 0) {
-		//Clear out data from old shape
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), 5 * sizeof(vec4), '\0' );
-		glutPostRedisplay();
-	}
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		//Check if click was on the shapes menu, then select correct shape
@@ -418,10 +469,24 @@ void mouse(int button, int state, int x1, int y1) {
 				clickCount = 0;
 				shape = FREE;
 			}
-		}
+		} 
+
+		else if (x > 0.8) {
+			if (operation == ROTATE) {
+				rotate(y1);
+			}
+			else if (operation == SCALE) {
+				scale(y1);
+			}
+ 		}
 
 		//If click was outside of shapes menu, incremenet clickCount and go to appropriate drawing function for currently selected shape
 		else {
+			if (operation == TRANSLATE) {
+				translate(x, y);
+				operation = -1;
+			}
+
 			switch (shape) {
 			case TRIANGLE:
 				clickCount++;
