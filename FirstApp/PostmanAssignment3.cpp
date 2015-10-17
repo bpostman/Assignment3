@@ -8,6 +8,7 @@ using namespace std;
 vec4 staticVertices[] = {
 	
 	//Sidebar frame
+	
 	vec4(-1.0, 1.0, 0.0, 1.0),	//0
 	vec4(-1.0, 0.5, 0.0, 1.0),	//1
 	vec4(-0.6, 0.5, 0.0, 1.0),	//2
@@ -24,13 +25,27 @@ vec4 staticVertices[] = {
 	vec4(-0.95, 0.65, 0.0, 1.0),	//11
 	vec4(-0.65, 0.65, 0.0, 1.0),	//12
 
-	//Square
+	//Rectangle
 	vec4(-0.95, 0.35, 0.0, 1.0),	//13
 	vec4(-0.95, 0.15, 0.0, 1.0),	//14
 	vec4(-0.65, 0.15, 0.0, 1.0),	//15
-	vec4(-0.65, 0.35, 0.0, 1.0)		//16
+	vec4(-0.65, 0.35, 0.0, 1.0),	//16
+	
+	//Selection rectangle
+	vec4(0.8, 0.9, 0.0, 1.0),		//17
+	vec4(0.8, -0.9, 0.0, 1.0),		//18
+	vec4(0.9, -0.9, 0.0, 1.0),		//19
+	vec4(0.9, 0.9, 0.0, 1.0),		//20
 
-	//Circle and free draw created in init function
+	//Free Draw
+	vec4(-0.68, -0.77, 0.0, 1.0),	//21
+	vec4(-0.75, -0.68, 0.0, 1.0),	//22
+	vec4(-0.82, -0.79, 0.0, 1.0),	//23
+	vec4(-0.68, -0.85, 0.0, 1.0),	//24
+	vec4(-0.88, -0.90, 0.0, 1.0),	//25
+
+
+	//Circle created in init function
 };
 
 //Order of vertices, used for statically created objects
@@ -42,11 +57,18 @@ GLuint elements[] = {
 	4, 6, 7, 5, 4,
 	6, 8, 9, 7, 6,
 
+	//Selection Rectangle
+	17, 18, 19, 20, 17,
+
 	//Triangle
 	10, 11, 12,
 
-	//Square
-	13, 14, 15, 16, 13
+	//Rectangle
+	13, 14, 15, 16, 13,
+
+	//Free Draw
+	21, 22, 23, 24, 25
+
 };
 
 //IDs for menus and selections
@@ -56,6 +78,8 @@ static int menuID;
 static int operation;
 static int shape = -1;
 static float inputColor[4];
+static int mouseState = GLUT_UP;
+static bool dragFlag = FALSE;
 
 //Stores and tracks user input
 static int clickCount = 0;
@@ -76,37 +100,6 @@ vec4 circleVertices[numPoints];
 vec4 freeVertices[numPoints];
 
 /*---------------------------------------------------------------*/
-vec2 getPosition(int x1, int y1) {
-	float xf = (float)x1;
-	float yf = (float)y1;
-	float x, y;
-	int width = glutGet(GLUT_WINDOW_WIDTH);
-	int height = glutGet(GLUT_WINDOW_HEIGHT);
-	float halfWidth = (float)width / 2;
-	float halfHeight = (float)height / 2;
-
-	if (x1 < halfWidth)
-		x = xf / halfWidth - 1;
-	else if (x1 > halfWidth)
-		x = (xf - halfWidth) / halfWidth;
-	else
-		x = 0;
-
-
-	if (y1 < halfHeight)
-		y = -(yf - halfHeight) / halfHeight;
-	else if (y1 > halfHeight)
-		y = yf / -halfHeight + 1;
-	else
-		y = 0;
-
-	return vec2(x, y);
-
-}
-
-/*------------------------------------------------------------------*/
-
-
 //Initialize necessary componenets and send data to the GPU
 void init() {
 
@@ -125,14 +118,14 @@ void init() {
 	//Create and store points for the circle on the sidebar
 	float theta = 6.18 / numPoints;
 	for (int i = 0; i < numPoints; i++) {
-		float x = -0.8+0.15*cosf(theta*i);
-		float y = -0.25+0.15*sinf(theta*i);
+		float x = -0.8 + 0.15*cosf(theta*i);
+		float y = -0.25 + 0.15*sinf(theta*i);
 		circleVertices[i] = vec4(x, y, 0, 1);
 	}
-	
+
 	//Store the vertex data in the vbo
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(freeVertices)+sizeof(rVertices), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(freeVertices) + sizeof(rVertices), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(staticVertices), staticVertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices), sizeof(circleVertices), circleVertices);
 
@@ -153,7 +146,65 @@ void init() {
 
 /*---------------------------------------------------------------*/
 
-void drawTriangle(int button, int state, float x, float y) {
+//Callback function used by glut to display objects to the user
+void display(void)
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//Clear the display
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	//Draw program-defined objects
+	glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_INT, 0);	//Sidebar frame
+	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(20));		//Selection Rectangle
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indexOffset(25));		//Triangle
+	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(28));		//Rectangle
+	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(33));		//Free Draw
+	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), numPoints);
+
+	//Draw user-defined objects
+	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
+	if (shape == TRIANGLE)
+		glDrawArrays(GL_TRIANGLES, first, 3);
+	else if (shape == RECTANGLE)
+		glDrawArrays(GL_LINE_STRIP, first, 5);
+	else if (shape == CIRCLE)
+		glDrawArrays(GL_POINTS, first, numPoints);
+	glutSwapBuffers();
+}
+
+/*---------------------------------------------------------------*/
+
+//Converts window coordinates to object coordinates
+vec2 getPosition(int x1, int y1) {
+	float xf = (float)x1;
+	float yf = (float)y1;
+	float x, y;
+	int width = glutGet(GLUT_WINDOW_WIDTH);
+	int height = glutGet(GLUT_WINDOW_HEIGHT);
+	float halfWidth = (float)width / 2;
+	float halfHeight = (float)height / 2;
+
+	if (x1 < halfWidth)
+		x = xf / halfWidth - 1;
+	else if (x1 > halfWidth)
+		x = (xf - halfWidth) / halfWidth;
+	else
+		x = 0;
+
+	if (y1 < halfHeight)
+		y = -(yf - halfHeight) / halfHeight;
+	else if (y1 > halfHeight)
+		y = yf / -halfHeight + 1;
+	else
+		y = 0;
+
+	return vec2(x, y);
+
+}
+
+/*---------------------------------------------------------------*/
+
+void drawTriangle(float x, float y) {
 	if (clickCount == 1) {
 		tVertices[0] = vec4(x, y, 0, 1);
 	}
@@ -178,7 +229,7 @@ void drawTriangle(int button, int state, float x, float y) {
 
 /*---------------------------------------------------------------*/
 
-void drawRectangle(int button, int state, float x, float y) {
+void drawRectangle(float x, float y) {
 	if (clickCount == 1) {
 		//Clear out data from old shape
 		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), NULL);
@@ -208,7 +259,7 @@ void drawRectangle(int button, int state, float x, float y) {
 
 /*---------------------------------------------------------------*/
 
-void drawCircle(int button, int state, float x, float y) {
+void drawCircle(float x, float y) {
 
 	if (clickCount == 1) {
 		cVertices[0] = vec4(x, y, 0, 1);
@@ -226,8 +277,8 @@ void drawCircle(int button, int state, float x, float y) {
 			float x = cVertices[0].x + radius*cosf(theta*i);
 			float y = cVertices[0].y + radius*sinf(theta*i);
 
-			//Don't draw point if it goes into sidebar
-			if (x > -0.6) {
+			//Don't draw point if it goes into sidebar or selection rectangle
+			if (x > -0.6 && x < 0.8) {
 				points[i] = vec4(x, y, 0, 1);
 			}
 		}
@@ -245,35 +296,13 @@ void drawCircle(int button, int state, float x, float y) {
 
 /*---------------------------------------------------------------*/
 
-void drawFree(int button, int state, float x, float y) {
+void drawFree(float x, float y) {
 	//FUCK FUCK FUCK SHIT SHIT
 }
 
 /*---------------------------------------------------------------*/
 
-//Callback function used by glut to display objects to the user
-void display( void )
-{
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//Clear the display
-	glClear(GL_COLOR_BUFFER_BIT);
 
-	//Draw program-defined objects
-	glDrawElements(GL_LINE_STRIP, 20, GL_UNSIGNED_INT, 0);
-	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, indexOffset(20));
-	glDrawElements(GL_LINE_STRIP, 5, GL_UNSIGNED_INT, indexOffset(23));
-	glDrawArrays(GL_POINTS, sizeof(staticVertices) / sizeof(vec4), numPoints);
-
-	//Draw user-defined objects
-	int first = (sizeof(staticVertices) + sizeof(circleVertices)) / sizeof(vec4);
-	if (shape == TRIANGLE && clickCount != 1 && clickCount != 2)
-		glDrawArrays(GL_TRIANGLES, first, 3);
-	else if (shape == RECTANGLE && clickCount != 1)
-		glDrawArrays(GL_LINE_STRIP, first, 5);
-	else if (shape == CIRCLE && clickCount != 1)
-		glDrawArrays(GL_POINTS, first, numPoints);
-	glFlush();
-}
 
 /*---------------------------------------------------------------*/
 
@@ -292,8 +321,63 @@ void keyboard( unsigned char key, int x, int y )
 
 /*---------------------------------------------------------------*/
 
-void mouse(int button, int state, int x1, int y1) {
+void mouseDrag(int x1, int y1) {
+	vec2 temp = getPosition(x1, y1);
+	float x = temp.x;
+	float y = temp.y;
+	
+	//If free draw is selected, go right to drawFree()
+	if (shape == FREE) {
+		drawFree(x, y);
+	}
+	
+	//Circle has no drag functionality
+	else if (shape == CIRCLE) {
+		return;
+	}
 
+	//If it's the first click, revert to normal behavior
+	if (clickCount == 0) {
+		return;
+	}
+
+	else if (clickCount == 1) {
+		//If only the second click and TRIANGLE is selected, revert to normal behavior
+		if (shape == TRIANGLE) {
+			return;
+		}
+
+		//If it's the second click for the rectangle, use drag functionality
+		else if (shape == RECTANGLE) {
+			rVertices[2] = vec4(x, y, 0, 1);
+			rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
+			rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
+			rVertices[4] = vec4(rVertices[0]);
+			
+			//Store data in VBO and post a redisplay
+			glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(rVertices), rVertices);
+			glutPostRedisplay();
+		}
+	}
+
+		//If it's the third click and TRIANGLE is selected, use drag functionality
+		else if (clickCount == 2 && shape == TRIANGLE) {
+			tVertices[2] = vec4(x, y, 0, 1);
+
+			//Store data in VBO and post a redisplay
+			glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices), sizeof(tVertices), tVertices);
+			glutPostRedisplay();
+		}
+	
+}
+
+/*---------------------------------------------------------------*/
+
+
+void mouse(int button, int state, int x1, int y1) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		mouseState = GLUT_DOWN;
+	}
 	//Calculate and store world-view coordinates
 	vec2 temp = getPosition(x1, y1);
 	float x = temp.x;
@@ -304,7 +388,7 @@ void mouse(int button, int state, int x1, int y1) {
 		glutPostRedisplay();
 	}
 
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		//Check if click was on the shapes menu, then select correct shape
 		if (x < -0.6) {
 			if (y > 0.5) {
@@ -330,19 +414,19 @@ void mouse(int button, int state, int x1, int y1) {
 			switch (shape) {
 			case TRIANGLE:
 				clickCount++;
-				drawTriangle(button, state, x, y);
+				drawTriangle(x, y);
 				break;
 			case RECTANGLE:
 				clickCount++;
-				drawRectangle(button, state, x, y);
+				drawRectangle(x, y);
 				break;
 			case CIRCLE:
 				clickCount++;
-				drawCircle(button, state, x, y);
+				drawCircle(x, y);
 				break;
 			case FREE:
 				clickCount++;
-				drawFree(button, state, x, y);
+				drawFree(x, y);
 				break;
 			default:
 				break;
@@ -389,9 +473,6 @@ void menu(int choice) {
 
 }
 
-
-/*---------------------------------------------------------------*/
-
 /*---------------------------------------------------------------*/
 
 void initMenu() {
@@ -420,7 +501,7 @@ void initMenu() {
 
 int main( int argc, char **argv ) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA);
+    glutInitDisplayMode(GLUT_RGBA |GLUT_DOUBLE);
     glutInitWindowSize(512, 512);
     
 	glutInitContextVersion(3, 2);
@@ -433,6 +514,7 @@ int main( int argc, char **argv ) {
 
 	//Handler functions
 	glutMouseFunc(mouse);
+	glutMotionFunc(mouseDrag);
 	glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
 
