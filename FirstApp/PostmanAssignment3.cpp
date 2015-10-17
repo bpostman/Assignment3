@@ -349,11 +349,9 @@ void translate(float x, float y) {
 	
 	printf("(%f, %f)\n", x, y);
 	mat4 modelView = Translate(vec4(x, y, 0, 1));
-	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
 	
 	glUseProgram(dynamicShaders);
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
 	glutPostRedisplay();
 }
 
@@ -408,11 +406,9 @@ void rotate(int y) {
 
 	//Move object to center, rotate about Z axis, move back to original position
 	mat4 modelView = translate1 * rotate * translate2;
-	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
 
 	//Send matrices to the shaders and post a redisplay
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
 	glutPostRedisplay();
 }
 
@@ -426,11 +422,9 @@ void scale(int y) {
 
 	printf("Scale: %f\n", scale);
 	mat4 modelView = Scale(scale, scale, scale);
-	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
-
+	
 	//Send matrices to the shaders and post a redisplay
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
 	glutPostRedisplay();
 }
 
