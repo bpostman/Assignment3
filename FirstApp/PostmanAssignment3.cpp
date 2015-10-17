@@ -73,6 +73,8 @@ vec4 circleVertices[numPoints];
 
 //Shortcut for the size of the statically defined objects
 int staticSize;
+float zoom = 1.0f;
+float aspectRatio; 
 
 //Indentifiers used for communicating with shaders
 GLuint staticShaders;
@@ -112,6 +114,9 @@ void init() {
 	//Set background color to grey
 	glClearColor(0.5, 0.5, 0.5, 1.0);
 
+	//Set the aspect ratio, used for transformations
+	aspectRatio = glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
+	
 	// Create and bind a vertex array object
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -336,12 +341,14 @@ void drawFree(float x, float y) {
 
 
 void translate(float x, float y) {
+	
 	vec4 newCenter = (x, y, 0, 1);
-	mat4 translation = Translate(newCenter);
-
-	glUseProgram(dynamicShaders);
-	GLuint projectionMatrix = glGetUniformLocation(dynamicShaders, "projectionMatrix");
-	glUniformMatrix4fv(projectionMatrix, 1, FALSE, translation);
+	mat4 modelView = Translate(newCenter);
+	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
+	
+	//glUseProgram(dynamicShaders);
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
 	glutPostRedisplay();
 }
 
@@ -350,9 +357,58 @@ void translate(float x, float y) {
 
 
 void rotate(int y) {
+	
 	float conversion = 360.0f / glutGet(GLUT_WINDOW_HEIGHT);
 	float theta = y * conversion;
-	printf("theta = %f\n", theta);
+	float centerX, centerY;
+
+	//Find the current center of the object, and create translation to send it back there
+	if (shape == TRIANGLE) {
+		centerX = (tVertices[0].x + tVertices[1].x + tVertices[2].x) / 3;
+		centerY = (tVertices[0].y + tVertices[1].y + tVertices[2].y) / 3;
+	}
+
+	else if (shape == RECTANGLE) {
+		if (rVertices[0].x > rVertices[2].x) {
+			centerX = rVertices[2].x + (rVertices[0].x - rVertices[2].x) / 2;
+		}
+		else {
+			centerX = rVertices[0].x + (rVertices[2].x - rVertices[0].x) / 2;
+		}
+		if (rVertices[0].y > rVertices[2].y) {
+			centerY = rVertices[2].y + (rVertices[0].y - rVertices[2].y) / 2;
+		}
+		else {
+			centerY = rVertices[0].y + (rVertices[2].y - rVertices[0].y) / 2;
+		}
+	}
+
+	else if (shape == CIRCLE) {
+		centerX = cVertices[0].x;
+		centerY = cVertices[0].y;
+	}
+
+	else if (shape == FREE) {
+		int centerPoint = sizeof(fVertices) / sizeof(vec4);
+		centerX = fVertices[centerPoint].x;
+		centerY = fVertices[centerPoint].y;
+	}
+
+	//Matrix to rotate by theta
+	mat4 rotate = RotateZ(theta);
+	//Matrix to move triangle to center
+	mat4 translate2 = Translate(vec4(0.0, 0.0, 0.0, 1.0));
+	//Matrix to move triangle back to original position
+	mat4 translate1 = Translate(vec4(centerX, centerY, 0, 1));
+
+	//Move object to center, rotate about Z axis, move back to original position
+	mat4 modelView = translate1 * rotate * translate2;
+	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
+
+	//Send matrices to the shaders and post a redisplay
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
+	glutPostRedisplay();
 }
 
 

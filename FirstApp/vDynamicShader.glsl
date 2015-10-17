@@ -3,13 +3,12 @@
 in vec4 vDynamicPosition;
 out vec4 color;
 uniform vec4 vDynamicColor;
-uniform mat4 projectionMatrix;
+uniform mat4 modelView = mat4(1.0);
+uniform mat4 projectionMatrix = mat4(1.0);
 
 void main()
 {
-	//gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex
-	//printf("%f,%f,%f,%f", projectionMatrix[0][0], projectionMatrix[0][1], projectionMatrix[0][2], projectionMatrix[0][3]);
-    gl_Position = vDynamicPosition;// * projectionMatrix;
+	gl_Position = projectionMatrix * modelView * vDynamicPosition;
 	color = vDynamicColor;
 
 }
