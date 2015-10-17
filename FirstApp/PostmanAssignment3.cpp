@@ -1,14 +1,11 @@
 #include "Angel.h"
-#include <iostream>
-using namespace std;
 
+//Macro for finding offset used in elements aray
 #define indexOffset(index) (void*)(index*sizeof(GLuint))
 
 //Vertices for objects created at compile time
 vec4 staticVertices[] = {
-	
 	//Sidebar frame
-	
 	vec4(-1.0, 1.0, 0.0, 1.0),	//0
 	vec4(-1.0, 0.5, 0.0, 1.0),	//1
 	vec4(-0.6, 0.5, 0.0, 1.0),	//2
@@ -44,13 +41,11 @@ vec4 staticVertices[] = {
 	vec4(-0.68, -0.85, 0.0, 1.0),	//24
 	vec4(-0.88, -0.90, 0.0, 1.0),	//25
 
-
 	//Circle created in init function
 };
 
 //Order of vertices, used for statically created objects
-GLuint elements[] = {
-	
+GLuint elements[] = {	
 	//Sidebar frame
 	0, 1, 2, 3, 0,
 	1, 4, 5, 2, 1,
@@ -68,8 +63,16 @@ GLuint elements[] = {
 
 	//Free Draw
 	21, 22, 23, 24, 25
-
 };
+
+//Some global variabls
+static const int numPoints = 5000;
+vec4 circleVertices[numPoints];static GLuint staticShaders;
+static GLuint dynamicShaders;
+static GLuint staticColor;
+static GLuint dynamicColor;
+enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
+enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE };
 
 //IDs for menus and selections
 static int operationMenu;
@@ -84,22 +87,12 @@ static int clickCount = 0;
 vec4 tVertices[3];
 vec4 rVertices[5];	//5 to make the loop
 vec4 cVertices[2];	//Holds the center and point on circumference
-vec4 fVertices[5];
+vec4 fVertices[numPoints];
 
-//Some global variabls
-static GLuint staticShaders;
-static GLuint dynamicShaders;
-static GLuint staticColor;
-static GLuint dynamicColor;
-enum shapes { RECTANGLE, TRIANGLE, CIRCLE, FREE };
-enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, SCALE };
-
-//Vertex counts and arrays for dynamically created objects
-static const int numPoints = 5000;
-vec4 circleVertices[numPoints];
-vec4 freeVertices[numPoints];
 
 /*---------------------------------------------------------------*/
+
+
 //Initialize necessary componenets and send data to the GPU
 void init() {
 
@@ -125,7 +118,7 @@ void init() {
 
 	//Store the vertex data in the vbo
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(freeVertices) + sizeof(rVertices), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(staticVertices) + sizeof(circleVertices) + sizeof(fVertices), NULL, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(staticVertices), staticVertices);
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(staticVertices), sizeof(circleVertices), circleVertices);
 
@@ -148,7 +141,9 @@ void init() {
 	glEnableVertexAttribArray(dynamicPosition);
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 //Callback function used by glut to display objects to the user
 void display(void)
@@ -179,7 +174,9 @@ void display(void)
 	glutSwapBuffers();
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 //Converts window coordinates to object coordinates
 vec2 getPosition(int x1, int y1) {
@@ -209,7 +206,9 @@ vec2 getPosition(int x1, int y1) {
 
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void drawTriangle(float x, float y) {
 	if (clickCount == 1) {
@@ -234,7 +233,9 @@ void drawTriangle(float x, float y) {
 	}
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void drawRectangle(float x, float y) {
 	if (clickCount == 1) {
@@ -264,7 +265,9 @@ void drawRectangle(float x, float y) {
 	}
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void drawCircle(float x, float y) {
 
@@ -301,17 +304,18 @@ void drawCircle(float x, float y) {
 	}
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void drawFree(float x, float y) {
-	//FUCK FUCK FUCK SHIT SHIT
+	
+
 }
 
-/*---------------------------------------------------------------*/
-
-
 
 /*---------------------------------------------------------------*/
+
 
 //Handle keyboard input and redraw accordingly
 void keyboard( unsigned char key, int x, int y )
@@ -326,7 +330,9 @@ void keyboard( unsigned char key, int x, int y )
     }
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void mouseDrag(int x1, int y1) {
 	vec2 temp = getPosition(x1, y1);
@@ -377,6 +383,7 @@ void mouseDrag(int x1, int y1) {
 		}
 	
 }
+
 
 /*---------------------------------------------------------------*/
 
@@ -439,7 +446,10 @@ void mouse(int button, int state, int x1, int y1) {
 	}
 }
 
+
 /*---------------------------------------------------------------*/
+
+
 void menu(int choice) {
 
 	switch (choice) {
@@ -483,7 +493,9 @@ void menu(int choice) {
 
 }
 
+
 /*---------------------------------------------------------------*/
+
 
 void initMenu() {
 	
