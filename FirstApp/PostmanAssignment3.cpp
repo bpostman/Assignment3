@@ -134,7 +134,7 @@ void init() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
 	// Load shaders
-	shaders = InitShader("vShader.glsl", "fShader.glsl");
+	shaders = InitShader("vStaticShader.glsl", "fStaticShader.glsl");
 	color = glGetUniformLocation(shaders, "vColor");
 
 	//Create location for first name position
