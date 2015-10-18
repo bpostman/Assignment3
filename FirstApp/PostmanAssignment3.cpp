@@ -345,8 +345,6 @@ void drawFree(float x, float y) {
 
 void translate(float x, float y) {
 	mat4 modelView = Translate(vec4(x, y, 0.0f, 1.0f));
-	
-	glUseProgram(dynamicShaders);
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
 	glutPostRedisplay();
 }
@@ -468,11 +466,12 @@ void menuClick(float x, float y, int x1, int y1) {
 void canvasClick(float x, float y) {
 	if (operation == TRANSLATE) {
 		translate(x, y);
+		operation = -1;
 		return;
 	}
 	
 	//Reset the transformation matrix
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
+	//glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
 
 	switch (shape) {
 	case TRIANGLE:
