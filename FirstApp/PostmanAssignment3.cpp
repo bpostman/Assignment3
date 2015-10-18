@@ -93,7 +93,7 @@ enum inputs { LIGHT_GREEN, DARK_GREEN, YELLOW, WHITE, BLACK, TRANSLATE, ROTATE, 
 int operationMenu;
 int colorMenu;
 int menuID;
-int operation;
+int transformation = -1;
 int shape = -1;
 float inputColor[4];
 
@@ -160,8 +160,8 @@ void init() {
 	glVertexAttribPointer(dynamicPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(dynamicPosition);
 
-	//Reset data for operations
-
+	//Reset data for transformations
+	transformation = -1;
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
 	glutPostRedisplay();
 }
@@ -449,10 +449,10 @@ void menuClick(float x, float y, int x1, int y1) {
 	}
 
 	else if (x > 0.8f) {
-		if (operation == ROTATE) {
+		if (transformation == ROTATE) {
 			rotate(y1);
 		}
-		else if (operation == SCALE) {
+		else if (transformation == SCALE) {
 			scale(y1);
 		}
 	}
@@ -464,9 +464,8 @@ void menuClick(float x, float y, int x1, int y1) {
 
 //Handle when a click is in the main part of the screen, or the "canvas"
 void canvasClick(float x, float y) {
-	if (operation == TRANSLATE) {
+	if (transformation == TRANSLATE) {
 		translate(x, y);
-		operation = -1;
 		return;
 	}
 	
@@ -599,13 +598,13 @@ void menu(int choice) {
 
 	switch (choice) {
 	case TRANSLATE:
-		operation = TRANSLATE;
+		transformation = TRANSLATE;
 		break;
 	case ROTATE:
-		operation = ROTATE;
+		transformation = ROTATE;
 		break;
 	case SCALE:
-		operation = SCALE;
+		transformation = SCALE;
 		break;
 	case LIGHT_GREEN:
 		inputColor[0] = 0.0f; inputColor[1] = 0.5f; inputColor[2] = 0.0f; inputColor[3] = 1.0f;
