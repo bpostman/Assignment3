@@ -6,40 +6,40 @@
 //Vertices for objects created at compile time
 vec4 staticVertices[] = {
 	//Sidebar frame
-	vec4(-1.0, 1.0, 0.0, 1.0),	//0
-	vec4(-1.0, 0.5, 0.0, 1.0),	//1
-	vec4(-0.6, 0.5, 0.0, 1.0),	//2
-	vec4(-0.6, 1.0, 0.0, 1.0),	//3
-	vec4(-1.0, 0.0, 0.0, 1.0),	//4
-	vec4(-0.6, 0.0, 0.0, 1.0),	//5
-	vec4(-1.0, -0.5, 0.0, 1.0),	//6
-	vec4(-0.6, -0.5, 0.0, 1.0),	//7
-	vec4(-1.0, -1.0, 0.0, 1.0),	//8
-	vec4(-0.6, -1.0, 0.0, 1.0),	//9
+	vec4(-1.0f, 1.0f, 0.0f, 1.0f),	//0
+	vec4(-1.0f, 0.5f, 0.0f, 1.0f),	//1
+	vec4(-0.6f, 0.5f, 0.0f, 1.0f),	//2
+	vec4(-0.6f, 1.0f, 0.0f, 1.0f),	//3
+	vec4(-1.0f, 0.0f, 0.0f, 1.0f),	//4
+	vec4(-0.6f, 0.0f, 0.0f, 1.0f),	//5
+	vec4(-1.0f, -0.5f, 0.0f, 1.0f),	//6
+	vec4(-0.6f, -0.5f, 0.0f, 1.0f),	//7
+	vec4(-1.0f, -1.0f, 0.0f, 1.0f),	//8
+	vec4(-0.6f, -1.0f, 0.0f, 1.0f),	//9
 
 	//Triangle
-	vec4(-0.8, 0.85, 0.0, 1.0),		//10
-	vec4(-0.95, 0.65, 0.0, 1.0),	//11
-	vec4(-0.65, 0.65, 0.0, 1.0),	//12
+	vec4(-0.8f, 0.85f, 0.0f, 1.0f),		//10
+	vec4(-0.95f, 0.65f, 0.0f, 1.0f),	//11
+	vec4(-0.65f, 0.65f, 0.0f, 1.0f),	//12
 
 	//Rectangle
-	vec4(-0.95, 0.35, 0.0, 1.0),	//13
-	vec4(-0.95, 0.15, 0.0, 1.0),	//14
-	vec4(-0.65, 0.15, 0.0, 1.0),	//15
-	vec4(-0.65, 0.35, 0.0, 1.0),	//16
+	vec4(-0.95f, 0.35f, 0.0f, 1.0f),	//13
+	vec4(-0.95f, 0.15f, 0.0f, 1.0f),	//14
+	vec4(-0.65f, 0.15f, 0.0f, 1.0f),	//15
+	vec4(-0.65f, 0.35f, 0.0f, 1.0f),	//16
 	
 	//Selection rectangle
-	vec4(0.8, 0.96, 0.0, 1.0),		//17
-	vec4(0.8, -0.99, 0.0, 1.0),		//18
-	vec4(0.9, -0.99, 0.0, 1.0),		//19
-	vec4(0.9, 0.96, 0.0, 1.0),		//20
+	vec4(0.8f, 0.96f, 0.0f, 1.0f),		//17
+	vec4(0.8f, -0.99f, 0.0f, 1.0f),		//18
+	vec4(0.9f, -0.99f, 0.0f, 1.0f),		//19
+	vec4(0.9f, 0.96f, 0.0f, 1.0f),		//20
 
 	//Free Draw
-	vec4(-0.68, -0.77, 0.0, 1.0),	//21
-	vec4(-0.75, -0.68, 0.0, 1.0),	//22
-	vec4(-0.82, -0.79, 0.0, 1.0),	//23
-	vec4(-0.68, -0.85, 0.0, 1.0),	//24
-	vec4(-0.88, -0.90, 0.0, 1.0),	//25
+	vec4(-0.68f, -0.77f, 0.0f, 1.0f),	//21
+	vec4(-0.75f, -0.68f, 0.0f, 1.0f),	//22
+	vec4(-0.82f, -0.79f, 0.0f, 1.0f),	//23
+	vec4(-0.68f, -0.85f, 0.0f, 1.0f),	//24
+	vec4(-0.88f, -0.90f, 0.0f, 1.0f),	//25
 
 	//Circle created in init function
 };
@@ -112,10 +112,10 @@ vec4 fVertices[numPoints];
 void init() {
 
 	//Set background color to grey
-	glClearColor(0.5, 0.5, 0.5, 1.0);
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 	//Set the aspect ratio, used for transformations
-	aspectRatio = glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
+	aspectRatio = (float)glutGet(GLUT_WINDOW_WIDTH) / (float)glutGet(GLUT_WINDOW_HEIGHT);
 	
 	// Create and bind a vertex array object
 	GLuint vao;
@@ -127,11 +127,11 @@ void init() {
 	glGenBuffers(2, buffers);
 
 	//Create and store points for the circle on the sidebar
-	float theta = 6.18 / numPoints;
+	float theta = 6.18f / numPoints;
 	for (int i = 0; i < numPoints; i++) {
-		float x = -0.8 + 0.15*cosf(theta*i);
-		float y = -0.25 + 0.15*sinf(theta*i);
-		circleVertices[i] = vec4(x, y, 0, 1);
+		float x = -0.8f + 0.15f*cosf(theta*i);
+		float y = -0.25f + 0.15f*sinf(theta*i);
+		circleVertices[i] = vec4(x, y, 0.0f, 1.0f);
 	}
 
 	staticSize = sizeof(staticVertices) + sizeof(circleVertices);
@@ -159,6 +159,11 @@ void init() {
 	GLuint dynamicPosition = glGetAttribLocation(dynamicShaders, "vDynamicPosition");
 	glVertexAttribPointer(dynamicPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glEnableVertexAttribArray(dynamicPosition);
+
+	//Reset data for operations
+
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
+	glutPostRedisplay();
 }
 
 
@@ -207,31 +212,23 @@ vec2 getPosition(int x1, int y1) {
 	float x, y;
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
-	float halfWidth = (float)width / 2;
-	float halfHeight = (float)height / 2;
+	float halfWidth = (float)width / 2.0f;
+	float halfHeight = (float)height / 2.0f;
 
 	if (x1 < halfWidth)
-		x = xf / halfWidth - 1;
+		x = xf / halfWidth - 1.0f;
 	else if (x1 > halfWidth)
 		x = (xf - halfWidth) / halfWidth;
 	else
-		x = 0;
+		x = 0.0f;
 
 	if (y1 < halfHeight)
 		y = -(yf - halfHeight) / halfHeight;
 	else if (y1 > halfHeight)
-		y = yf / -halfHeight + 1;
+		y = yf / -halfHeight + 1.0f;
 	else
-		y = 0;
+		y = 0.0f;
 	return vec2(x, y);
-
-	/*
-	x = (float)x1 / width * 2.0f - 1.0f;
-	y = (height - (float)y1) / height * 2.0f - 1.0f;
-
-	printf("HIS: %f, %f\n\n", x, y);
-	return vec2(x, y);
-	*/
 }
 
 
@@ -239,15 +236,16 @@ vec2 getPosition(int x1, int y1) {
 
 
 void drawTriangle(float x, float y) {
+
 	if (clickCount == 1) {
-		tVertices[0] = vec4(x, y, 0, 1);
+		tVertices[0] = vec4(x, y, 0.0f, 1.0f);
 	}
 	else if (clickCount == 2) {
-		tVertices[1] = vec4(x, y, 0, 1);
+		tVertices[1] = vec4(x, y, 0.0f, 1.0f);
 	}
 	
 	else if (clickCount == 3) {
-		tVertices[2] = vec4(x, y, 0, 1);
+		tVertices[2] = vec4(x, y, 0.0f, 1.0f);
 		
 		//Store data in VBO and post a redisplay
 		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(tVertices), tVertices);
@@ -267,13 +265,13 @@ void drawTriangle(float x, float y) {
 
 void drawRectangle(float x, float y) {
 	if (clickCount == 1) {
-		rVertices[0] = vec4(x, y, 0, 1);
+		rVertices[0] = vec4(x, y, 0.0f, 1.0f);
 	}
 	
 	else if (clickCount == 2) {
-		rVertices[2] = vec4(x, y, 0, 1);
-		rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
-		rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
+		rVertices[2] = vec4(x, y, 0.0f, 1.0f);
+		rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0.0f, 1.0f);
+		rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0.0f, 1.0f);
 		rVertices[4] = vec4(rVertices[0]);
 		
 		//Store data in VBO and post a redisplay
@@ -297,15 +295,15 @@ void drawRectangle(float x, float y) {
 void drawCircle(float x, float y) {
 
 	if (clickCount == 1) {
-		cVertices[0] = vec4(x, y, 0, 1);
+		cVertices[0] = vec4(x, y, 0.0f, 1.0f);
 	}
 	else if (clickCount ==2) {
-		cVertices[1] = vec4(x, y, 0, 1);
+		cVertices[1] = vec4(x, y, 0.0f, 1.0f);
 		vec4 points[numPoints];
 		
 		//Inputs used to draw circle
-		float radius = sqrt(pow(cVertices[1].x - cVertices[0].x, 2) + pow(cVertices[1].y - cVertices[0].y, 2));
-		float theta = 6.18 / numPoints;
+		float radius = sqrt(pow(cVertices[1].x - cVertices[0].x, 2.0f) + pow(cVertices[1].y - cVertices[0].y, 2.0f));
+		float theta = 6.18f / numPoints;
 
 		//Calculate points for circle
 		for (int i = 0; i < numPoints; i++) {
@@ -313,8 +311,8 @@ void drawCircle(float x, float y) {
 			float y = cVertices[0].y + radius*sinf(theta*i);
 
 			//Don't draw point if it goes into sidebar or selection rectangle
-			if (x > -0.6 && x < 0.8) {
-				points[i] = vec4(x, y, 0, 1);
+			if (x > -0.6f && x < 0.8f) {
+				points[i] = vec4(x, y, 0.0f, 1.0f);
 			}
 		}
 		
@@ -334,8 +332,8 @@ void drawCircle(float x, float y) {
 
 
 void drawFree(float x, float y) {
-	if (x > -0.6 && x < 0.8) {
-		fVertices[index++] = vec4(x, y, 0, 1);
+	if (x > -0.6f && x < 0.8f) {
+		fVertices[index++] = vec4(x, y, 0.0f, 1.0f);
 		glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(fVertices), fVertices);
 		glutPostRedisplay();
 	}
@@ -346,9 +344,7 @@ void drawFree(float x, float y) {
 
 
 void translate(float x, float y) {
-	
-	printf("(%f, %f)\n", x, y);
-	mat4 modelView = Translate(vec4(x, y, 0, 1));
+	mat4 modelView = Translate(vec4(x, y, 0.0f, 1.0f));
 	
 	glUseProgram(dynamicShaders);
 	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
@@ -367,22 +363,22 @@ void rotate(int y) {
 
 	//Find the current center of the object, and create translation to send it back there
 	if (shape == TRIANGLE) {
-		centerX = (tVertices[0].x + tVertices[1].x + tVertices[2].x) / 3;
-		centerY = (tVertices[0].y + tVertices[1].y + tVertices[2].y) / 3;
+		centerX = (tVertices[0].x + tVertices[1].x + tVertices[2].x) / 3.0f;
+		centerY = (tVertices[0].y + tVertices[1].y + tVertices[2].y) / 3.0f;
 	}
 
 	else if (shape == RECTANGLE) {
 		if (rVertices[0].x > rVertices[2].x) {
-			centerX = rVertices[2].x + (rVertices[0].x - rVertices[2].x) / 2;
+			centerX = rVertices[2].x + (rVertices[0].x - rVertices[2].x) / 2.0f;
 		}
 		else {
-			centerX = rVertices[0].x + (rVertices[2].x - rVertices[0].x) / 2;
+			centerX = rVertices[0].x + (rVertices[2].x - rVertices[0].x) / 2.0f;
 		}
 		if (rVertices[0].y > rVertices[2].y) {
-			centerY = rVertices[2].y + (rVertices[0].y - rVertices[2].y) / 2;
+			centerY = rVertices[2].y + (rVertices[0].y - rVertices[2].y) / 2.0f;
 		}
 		else {
-			centerY = rVertices[0].y + (rVertices[2].y - rVertices[0].y) / 2;
+			centerY = rVertices[0].y + (rVertices[2].y - rVertices[0].y) / 2.0f;
 		}
 	}
 
@@ -399,10 +395,10 @@ void rotate(int y) {
 
 	//Matrix to rotate by theta
 	mat4 rotate = RotateZ(theta);
-	//Matrix to move triangle to center
-	mat4 translate2 = Translate(vec4(0.0, 0.0, 0.0, 1.0));
 	//Matrix to move triangle back to original position
-	mat4 translate1 = Translate(vec4(centerX, centerY, 0, 1));
+	mat4 translate1 = Translate(vec4(centerX, centerY, 0.0f, 1.0f));
+	//Matrix to move triangle to center
+	mat4 translate2 = Translate(vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	//Move object to center, rotate about Z axis, move back to original position
 	mat4 modelView = translate1 * rotate * translate2;
@@ -418,9 +414,8 @@ void rotate(int y) {
 
 void scale(int y) {
 	float conversion = 10.0f / glutGet(GLUT_WINDOW_HEIGHT);
-	float scale = y * conversion;
+	float scale = (float)y * conversion;
 
-	printf("Scale: %f\n", scale);
 	mat4 modelView = Scale(scale, scale, scale);
 	
 	//Send matrices to the shaders and post a redisplay
@@ -430,18 +425,78 @@ void scale(int y) {
 
 
 /*---------------------------------------------------------------*/
-void resetOperation() {
-	
-	operation = -1;
-	mat4 modelView = mat4(identity());
-	mat4 projection = Ortho2D(-zoom * aspectRatio, zoom * aspectRatio, -zoom, zoom);
 
-	//Send matrices to the shaders and post a redisplay
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, modelView);
-	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "projectionMatrix"), 1, GL_TRUE, projection);
-	glutPostRedisplay();
 
+//Handle a click on shape menu or selection rectangle
+void menuClick(float x, float y, int x1, int y1) {
+
+	if (x < -0.6f) {
+		init();
+		if (y > 0.5f) {
+			clickCount = 0;
+			shape = TRIANGLE;
+		}
+		else if (y > 0.0f) {
+			clickCount = 0;
+			shape = RECTANGLE;
+		}
+		else if (y > -0.5f) {
+			clickCount = 0;
+			shape = CIRCLE;
+		}
+		else if (y > -1.0f) {
+			clickCount = 0;
+			shape = FREE;
+		}
+	}
+
+	else if (x > 0.8f) {
+		if (operation == ROTATE) {
+			rotate(y1);
+		}
+		else if (operation == SCALE) {
+			scale(y1);
+		}
+	}
 }
+
+
+/*---------------------------------------------------------------*/
+
+
+//Handle when a click is in the main part of the screen, or the "canvas"
+void canvasClick(float x, float y) {
+	if (operation == TRANSLATE) {
+		translate(x, y);
+		return;
+	}
+	
+	//Reset the transformation matrix
+	glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
+
+	switch (shape) {
+	case TRIANGLE:
+		clickCount++;
+		drawTriangle(x, y);
+		break;
+	case RECTANGLE:
+		clickCount++;
+		drawRectangle(x, y);
+		break;
+	case CIRCLE:
+		clickCount++;
+		drawCircle(x, y);
+		break;
+	case FREE:
+		clickCount++;
+		drawFree(x, y);
+		break;
+	default:
+		break;
+	}
+}
+
+
 /*---------------------------------------------------------------*/
 
 
@@ -490,10 +545,10 @@ void mouseDrag(int x1, int y1) {
 
 		//If it's the second click for the rectangle, use drag functionality
 		else if (shape == RECTANGLE) {
-			if (x > -0.6 && x < 0.8) {
-				rVertices[2] = vec4(x, y, 0, 1);
-				rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0, 1);
-				rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0, 1);
+			if (x > -0.6f && x < 0.8f) {
+				rVertices[2] = vec4(x, y, 0.0f, 1.0f);
+				rVertices[1] = vec4(rVertices[0].x, rVertices[2].y, 0.0f, 1.0f);
+				rVertices[3] = vec4(rVertices[2].x, rVertices[0].y, 0.0f, 1.0f);
 				rVertices[4] = vec4(rVertices[0]);
 
 				//Store data in VBO and post a redisplay
@@ -505,15 +560,14 @@ void mouseDrag(int x1, int y1) {
 
 		//If it's the third click and TRIANGLE is selected, use drag functionality
 		else if (clickCount == 2 && shape == TRIANGLE) {
-			if (x > -0.6 && x < 0.8) {
-				tVertices[2] = vec4(x, y, 0, 1);
+			if (x > -0.6f && x < 0.8f) {
+				tVertices[2] = vec4(x, y, 0.0f, 1.0f);
 
 				//Store data in VBO and post a redisplay
 				glBufferSubData(GL_ARRAY_BUFFER, staticSize, sizeof(tVertices), tVertices);
 				glutPostRedisplay();
 			}
 		}
-	
 }
 
 
@@ -527,65 +581,13 @@ void mouse(int button, int state, int x1, int y1) {
 	float y = temp.y;
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-		//Check if click was on the shapes menu, then select correct shape
-		if (x < -0.6) {
-			resetOperation();
-			if (y > 0.5) {
-				clickCount = 0;
-				shape = TRIANGLE;
-			}
-			else if (y > 0.0) {
-				clickCount = 0;
-				shape = RECTANGLE;
-			}
-			else if (y > -0.5) {
-				clickCount = 0;
-				shape = CIRCLE;
-			}
-			else if (y > -1.0) {
-				clickCount = 0;
-				shape = FREE;
-			}
-		} 
-
-		else if (x > 0.8) {
-			if (operation == ROTATE) {
-				rotate(y1);
-				//operation = -1;
-			}
-			else if (operation == SCALE) {
-				scale(y1);
-				//operation = -1;
-			}
- 		}
-
-		//If click was outside of shapes menu, incremenet clickCount and go to appropriate drawing function for currently selected shape
+		//Check if click was on the shapes menu or selection rectangle
+		if (x < -0.6f || x > 0.8f) {
+			menuClick(x, y, x1, y1);
+		}
+		//If click was outside of shapes menu
 		else {
-			if (operation == TRANSLATE) {
-				translate(x, y);
-				//operation = -1;
-			}
-
-			switch (shape) {
-			case TRIANGLE:
-				clickCount++;
-				drawTriangle(x, y);
-				break;
-			case RECTANGLE:
-				clickCount++;
-				drawRectangle(x, y);
-				break;
-			case CIRCLE:
-				clickCount++;
-				drawCircle(x, y);
-				break;
-			case FREE:
-				clickCount++;
-				drawFree(x, y);
-				break;
-			default:
-				break;
-			}
+			canvasClick(x, y);
 		}
 	}
 }
@@ -607,19 +609,19 @@ void menu(int choice) {
 		operation = SCALE;
 		break;
 	case LIGHT_GREEN:
-		inputColor[0] = 0.0; inputColor[1] = 0.5; inputColor[2] = 0.0; inputColor[3] = 1.0;
+		inputColor[0] = 0.0f; inputColor[1] = 0.5f; inputColor[2] = 0.0f; inputColor[3] = 1.0f;
 		break;
 	case DARK_GREEN:
-		inputColor[0] = 0.0; inputColor[1] = 0.3; inputColor[2] = 0.0; inputColor[3] = 1.0;
+		inputColor[0] = 0.0f; inputColor[1] = 0.3f; inputColor[2] = 0.0f; inputColor[3] = 1.0f;
 		break;
 	case YELLOW:
-		inputColor[0] = 0.8; inputColor[1] = 0.8; inputColor[2] = 0.0; inputColor[3] = 1.0;
+		inputColor[0] = 0.8f; inputColor[1] = 0.8f; inputColor[2] = 0.0f; inputColor[3] = 1.0f;
 		break;
 	case WHITE:
-		inputColor[0] = 1.0; inputColor[1] = 1.0; inputColor[2] = 1.0; inputColor[3] = 1.0;
+		inputColor[0] = 1.0f; inputColor[1] = 1.0f; inputColor[2] = 1.0f; inputColor[3] = 1.0f;
 		break;
 	case BLACK:
-		inputColor[0] = 0.0; inputColor[1] = 0.0; inputColor[2] = 0.0; inputColor[3] = 1.0;
+		inputColor[0] = 0.0f; inputColor[1] = 0.0f; inputColor[2] = 0.0f; inputColor[3] = 1.0f;
 		break;
 	default:
 		break;
@@ -634,7 +636,6 @@ void menu(int choice) {
 	glUniform4f(dynamicColor, inputColor[0], inputColor[1], inputColor[2], inputColor[3]);
 	
 	glutPostRedisplay();
-
 }
 
 
