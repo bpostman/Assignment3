@@ -355,16 +355,15 @@ void translate(float x, float y) {
 
 void rotate(int y) {
 	
-	float conversion = 360.0f / glutGet(GLUT_WINDOW_HEIGHT);
-	float theta = y * conversion;
+	float theta = (float)y * 360.0f / (float)glutGet(GLUT_WINDOW_HEIGHT);
 	float centerX, centerY;
 
-	//Find the current center of the object, and create translation to send it back there
+	//Find the current center of the shape
 	if (shape == TRIANGLE) {
 		centerX = (tVertices[0].x + tVertices[1].x + tVertices[2].x) / 3.0f;
 		centerY = (tVertices[0].y + tVertices[1].y + tVertices[2].y) / 3.0f;
 	}
-
+	
 	else if (shape == RECTANGLE) {
 		if (rVertices[0].x > rVertices[2].x) {
 			centerX = rVertices[2].x + (rVertices[0].x - rVertices[2].x) / 2.0f;
@@ -411,8 +410,7 @@ void rotate(int y) {
 
 
 void scale(int y) {
-	float conversion = 10.0f / glutGet(GLUT_WINDOW_HEIGHT);
-	float scale = (float)y * conversion;
+	float scale = (float)y * 10.0f / (float)glutGet(GLUT_WINDOW_HEIGHT);
 
 	mat4 modelView = Scale(scale, scale, scale);
 	
@@ -466,31 +464,33 @@ void menuClick(float x, float y, int x1, int y1) {
 void canvasClick(float x, float y) {
 	if (transformation == TRANSLATE) {
 		translate(x, y);
-		return;
 	}
-	
-	//Reset the transformation matrix
-	//glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
 
-	switch (shape) {
-	case TRIANGLE:
-		clickCount++;
-		drawTriangle(x, y);
-		break;
-	case RECTANGLE:
-		clickCount++;
-		drawRectangle(x, y);
-		break;
-	case CIRCLE:
-		clickCount++;
-		drawCircle(x, y);
-		break;
-	case FREE:
-		clickCount++;
-		drawFree(x, y);
-		break;
-	default:
-		break;
+	else {
+
+		//Reset the transformation matrix
+		glUniformMatrix4fv(glGetUniformLocation(dynamicShaders, "modelView"), 1, GL_TRUE, identity());
+
+		switch (shape) {
+		case TRIANGLE:
+			clickCount++;
+			drawTriangle(x, y);
+			break;
+		case RECTANGLE:
+			clickCount++;
+			drawRectangle(x, y);
+			break;
+		case CIRCLE:
+			clickCount++;
+			drawCircle(x, y);
+			break;
+		case FREE:
+			clickCount++;
+			drawFree(x, y);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
